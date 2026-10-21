@@ -3,6 +3,10 @@
 **Браузерная мини-игра для Яндекс Игр.** Ты сидишь в кафе, а собеседник рассказывает про свою рыбалку. Терпение тает, подозрение растёт — нужно вежливо сбежать.
 
 <p>
+  <a href="https://vpnmasterr.github.io/vozduhan/"><img alt="Играть онлайн" src="https://img.shields.io/badge/▶%20Играть%20онлайн-vpnmasterr.github.io-2ea043?style=for-the-badge"></a>
+</p>
+
+<p>
   <img alt="HTML" src="https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white">
   <img alt="CSS" src="https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white">
   <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black">
