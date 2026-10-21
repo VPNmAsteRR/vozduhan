@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#172638">
+  <meta name="description" content="Воздухан — смешная игра на реакцию и тайминг.">
+  <title>Воздухан — игра на побег</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script defer src="js/yandex.js"></script>
+  <script defer src="js/data.js"></script>
+  <script defer src="js/rng.js"></script>
+  <script defer src="js/audio.js"></script>
+  <script defer src="js/game.js"></script>
+  <script defer src="js/ui.js"></script>
+  <script defer src="js/main.js"></script>
+</head>
+<body>
+  <main class="game-shell" id="app" aria-live="off">
+    <section class="screen menu-screen" id="menu-screen">
+      <div class="menu-art" aria-hidden="true"><span>🗣️</span><span>💬</span><span>🚪</span></div>
+      <p class="eyebrow">ИГРА НА ТАЙМИНГ И ВЕЖЛИВОСТЬ</p>
+      <h1>Воздухан</h1>
+      <p class="lead">Он рассказывает. Ты ищешь повод уйти.</p>
+      <div class="menu-stats" id="menu-record">Рекорд: 0</div>
+      <button class="primary-button" data-action="start">Начать побег</button>
+      <div class="level-grid" id="level-grid" aria-label="Выбор уровня"></div>
+      <button class="secondary-button" data-action="howto">Как играть</button>
+      <div class="menu-footer">
+        <button class="icon-button" data-action="mute" aria-label="Выключить звук" title="Звук">🔊</button>
+        <span id="sound-label">Звук включён</span>
+        <button class="icon-button" data-action="reset" aria-label="Сбросить прогресс" title="Сбросить прогресс">↻</button>
+      </div>
+    </section>
+
+    <section class="screen howto-screen" id="howto-screen" hidden>
+      <p class="eyebrow">МИНИ-ИНСТРУКТАЖ</p>
+      <h2 id="howto-title">Слушай внимательно</h2>
+      <div class="howto-illustration" id="howto-icon" aria-hidden="true">👂</div>
+      <p class="howto-copy" id="howto-copy"></p>
+      <div class="slide-dots" id="slide-dots" aria-label="Слайд 1 из 3"></div>
+      <div class="button-row">
+        <button class="secondary-button" data-action="howto-back">Назад</button>
+        <button class="primary-button" data-action="howto-next">Дальше</button>
+      </div>
+    </section>
+
+    <section class="screen intro-screen" id="intro-screen" hidden>
+      <p class="eyebrow" id="intro-level">УРОВЕНЬ 1</p>
+      <h2 id="intro-name">Кафе</h2>
+      <div class="intro-scene" aria-hidden="true">☕ 🪑 🗣️</div>
+      <p id="intro-description"></p>
+      <button class="primary-button" data-action="play">Сесть за стол</button>
+      <button class="text-button" data-action="menu">В меню</button>
+    </section>
+
+    <section class="screen game-screen" id="game-screen" hidden>
+      <header class="hud">
+        <div class="hud-top">
+          <div class="level-label"><span id="hud-level">1</span><span id="hud-location">Кафе</span></div>
+          <div class="hud-actions">
+            <button class="icon-button small" data-action="mute" aria-label="Выключить звук" title="Звук">🔊</button>
+            <button class="icon-button small" data-action="pause" aria-label="Пауза" title="Пауза">Ⅱ</button>
+          </div>
+        </div>
+        <div class="meters">
+          <div class="meter-row"><span class="meter-icon" aria-hidden="true">🧠</span><span class="meter-name">Терпение</span><div class="meter-track"><div class="meter-fill patience-fill" id="patience-fill"></div></div><span class="meter-value" id="patience-value">100</span></div>
+          <div class="meter-row"><span class="meter-icon" aria-hidden="true">🤨</span><span class="meter-name">Подозрение</span><div class="meter-track"><div class="meter-fill suspicion-fill" id="suspicion-fill"></div></div><span class="meter-value" id="suspicion-value">0</span></div>
+          <div class="meter-row"><span class="meter-icon" aria-hidden="true">🚪</span><span class="meter-name">Побег</span><div class="meter-track"><div class="meter-fill escape-fill" id="escape-fill"></div></div><span class="meter-value" id="escape-value">0</span></div>
+        </div>
+        <div class="score-row"><span id="score-label">Счёт: 0</span><span id="combo-label">Комбо ×0</span><span id="inventory-label">Предметы: 0/2</span></div>
+      </header>
+
+      <div class="stage" id="stage">
+        <div class="scene-decor" id="scene-decor" aria-hidden="true"></div>
+        <div class="tutorial-hint" id="tutorial-hint" hidden>Вопрос — 👍 · Невероятный факт — 😮</div>
+        <div class="guest guest-a" id="guest-a" aria-hidden="true">🗣️</div>
+        <div class="guest guest-b" id="guest-b" aria-hidden="true">👵</div>
+        <div class="talk-bubble" id="talk-bubble" aria-live="polite"></div>
+        <div class="hook-card" id="hook-card" hidden>
+          <div class="hook-speaker" id="hook-speaker">Воздухан</div>
+          <div class="hook-line" id="hook-line"></div>
+          <div class="hook-timer"><div id="hook-timer-fill"></div></div>
+        </div>
+        <div class="breath-indicator" id="breath-indicator" hidden>💨 Вдох — самое время!</div>
+        <div class="elevator-board" id="elevator-board" hidden>ЭТАЖ <b id="elevator-floor">6</b></div>
+        <div class="player" id="player" aria-label="Ты">🧑</div>
+        <div class="airman" id="airman" aria-label="Воздухан">
+          <svg class="airman-svg" viewBox="0 0 240 260" role="img" aria-label="Мультяшный собеседник">
+            <ellipse class="body-shape" cx="120" cy="206" rx="78" ry="62"/>
+            <path class="neck" d="M94 158h52v47H94z"/>
+            <ellipse class="head" cx="120" cy="105" rx="82" ry="88"/>
+            <path class="hair" d="M41 88Q40 14 121 16q75 0 80 70-28-27-59-23-40 5-69-3-13 14-32 28z"/>
+            <path class="brow" d="M76 85q18-13 35 0M130 85q18-13 35 0"/>
+            <ellipse class="eye" cx="94" cy="105" rx="6" ry="9"/><ellipse class="eye" cx="147" cy="105" rx="6" ry="9"/>
+            <ellipse class="cheek cheek-left" cx="70" cy="124" rx="16" ry="9"/><ellipse class="cheek cheek-right" cx="169" cy="124" rx="16" ry="9"/>
+            <ellipse class="mouth" cx="120" cy="145" rx="14" ry="5"/>
+            <path class="tie" d="M109 164h22l-5 21 9 35-15 12-15-12 9-35z"/>
+          </svg>
+          <span class="airman-name" id="airman-name">Воздухан</span>
+        </div>
+        <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        <div class="debug-panel" id="debug-panel" hidden></div>
+      </div>
+
+      <footer class="controls">
+        <div class="reaction-grid" id="reaction-grid">
+          <button class="reaction-button" data-reaction="nod" aria-label="Кивнуть, клавиша 1"><span>👍</span><small>Кивнуть <kbd>1</kbd></small></button>
+          <button class="reaction-button" data-reaction="wow" aria-label="Сказать ого, клавиша 2"><span>😮</span><small>Ого! <kbd>2</kbd></small></button>
+          <button class="reaction-button" data-reaction="laugh" aria-label="Посмеяться, клавиша 3"><span>😂</span><small>Ха-ха <kbd>3</kbd></small></button>
+          <button class="reaction-button" data-reaction="sad" aria-label="Посочувствовать, клавиша 4"><span>😔</span><small>Понимаю <kbd>4</kbd></small></button>
+        </div>
+        <div class="action-row">
+          <button class="excuse-button" data-action="excuse" aria-label="Попробовать отмазаться, пробел">💬 Отмазка <kbd>Space</kbd></button>
+          <div class="item-buttons">
+            <button class="item-button" data-item="headphones" aria-label="Использовать наушник, клавиша Q">🎧<kbd>Q</kbd></button>
+            <button class="item-button" data-item="fakeCall" aria-label="Использовать фейковый звонок, клавиша W">📞<kbd>W</kbd></button>
+            <button class="item-button" data-item="coffee" aria-label="Выпить кофе, клавиша E">☕<kbd>E</kbd></button>
+          </div>
+        </div>
+      </footer>
+    </section>
+
+    <section class="overlay" id="pause-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="pause-title">
+      <div class="dialog-card"><p class="eyebrow">ПЕРЕДЫШКА</p><h2 id="pause-title">Пауза</h2><p>Он пока рассказывает это самому себе.</p><button class="primary-button" data-action="resume">Продолжить</button><button class="secondary-button" data-action="menu">В меню</button></div>
+    </section>
+    <section class="overlay" id="pick-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="pick-title">
+      <div class="dialog-card pick-card"><p class="eyebrow">ОКНО ДЛЯ ПОБЕГА</p><h2 id="pick-title">Выбери отмазку!</h2><p class="pick-timer" id="pick-timer">3.0</p><div class="excuse-options" id="excuse-options"></div><button class="text-button" data-action="cancel-pick">Передумал</button></div>
+    </section>
+    <section class="screen result-screen" id="result-screen" hidden>
+      <div class="result-icon" id="result-icon">🎉</div><p class="eyebrow" id="result-eyebrow">ПОБЕДА</p><h2 id="result-title">Свобода!</h2><p class="result-copy" id="result-copy"></p><div class="stars" id="result-stars"></div><p class="result-caption" id="result-caption"></p>
+      <button class="primary-button" data-action="continue">Дальше</button><button class="secondary-button" data-action="retry">Ещё раз</button><button class="text-button" data-action="menu">В меню</button>
+    </section>
+  </main>
+</body>
+</html>
